@@ -135,6 +135,10 @@ function quickSetupTest() {
  * Gather intelligent insights from Glean based on RFP data
  */
 function gatherGleanIntelligence(config) {
+  if (!config) {
+    Logger.log("❌ No config provided to gatherGleanIntelligence");
+    config = { brand: "Test Client", campaign_tactics: "Programmatic", budget_1: "$100,000", geo_targeting: "Global" };
+  }
   var gleanToken = PropertiesService.getScriptProperties().getProperty('GLEAN_TOKEN');
   
   if (!gleanToken) {
@@ -484,6 +488,10 @@ function extractIndustryInsights(result, synthesized, industry) {
  * Extract industry from config data
  */
 function extractIndustry(config) {
+  if (!config) {
+    Logger.log("⚠️ No config provided to extractIndustry, using default");
+    return "Consumer Goods";
+  }
   var brand = (config.brand || "").toLowerCase();
   var campaign = (config.campaign_name || "").toLowerCase();
   
@@ -544,6 +552,10 @@ function deduplicateSources(sources) {
  * Create fallback content when Glean is unavailable
  */
 function createFallbackContent(config) {
+  if (!config) {
+    Logger.log("⚠️ No config provided to createFallbackContent, using defaults");
+    config = { brand: "Client", geo_targeting: "Global", budget_1: "$100,000" };
+  }
   var industry = extractIndustry(config);
   
   return {
