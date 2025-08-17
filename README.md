@@ -14,10 +14,15 @@ This repository contains an enhanced Google Apps Script system that automates sl
 ## 📁 Files
 
 ### Core Implementation
-- **`complete_enhanced_script.gs`** - Complete working script ready for Google Apps Script
-- **`enhanced_slide_automation_with_glean.gs`** - Enhanced core functionality with Glean integration
-- **`missing_functions_to_add.gs`** - Additional utility functions (webhook handlers, queue management)
-- **`test_enhanced_workflow.gs`** - Comprehensive testing suite
+- **`enhanced_complete_automation.gs`** - **MAIN PRODUCTION SCRIPT** - Complete working script with Glean integration, queue management, and webhook system
+
+### Testing & Development
+- **`gas_test_functions.gs`** - Test functions for Google Apps Script (copy these into your script for testing)
+- **`comprehensive_curl_tests.sh`** - Comprehensive API testing script with 18 different test scenarios
+
+### Documentation
+- **`GOOGLE_APPS_SCRIPT_SETUP.md`** - Step-by-step setup instructions for Google Apps Script
+- **`PROJECT_STATUS_FINAL.md`** - Final status report confirming working system
 
 ### Key Enhancements from Original
 - ✅ **Glean API Integration** - Searches knowledge base for relevant content
@@ -32,7 +37,7 @@ This repository contains an enhanced Google Apps Script system that automates sl
 ### 1. Google Apps Script Setup
 1. Go to [script.google.com](https://script.google.com)
 2. Create new project: "Enhanced Slide Automation"
-3. Copy contents of `complete_enhanced_script.gs` to replace default code
+3. Copy contents of `enhanced_complete_automation.gs` to replace default code
 4. Save the project
 
 ### 2. Configure Script Properties
@@ -73,9 +78,11 @@ Expected output:
 ## 🧪 Testing
 
 Run these test functions in order:
-1. `quickSetupTest()` - Verify basic setup and Glean connectivity
-2. `testFullWorkflow()` - Test complete intelligence gathering
-3. `showSetupInstructions()` - Display detailed setup help
+1. `checkCurrentSetup()` - Verify all configurations and properties
+2. `testGleanConnection()` - Test Glean API connectivity  
+3. `runAllTests()` - Complete test suite for all functionality
+
+**Note**: Copy test functions from `gas_test_functions.gs` into your Apps Script project to run these tests.
 
 ## 🔌 Integration
 
@@ -165,6 +172,22 @@ The enhanced system is a drop-in replacement:
 - 🎯 Industry-specific best practices
 - 📖 Source citations for credibility
 - ⚡ Same processing speed
+
+---
+
+## 📁 **Clean Project Structure (After Cleanup)**
+
+```
+/slide_deck_glean_integration/
+├── enhanced_complete_automation.gs    # 🚀 MAIN PRODUCTION SCRIPT
+├── gas_test_functions.gs              # 🧪 Testing functions for Apps Script  
+├── comprehensive_curl_tests.sh        # 🔧 API testing script
+├── README.md                          # 📖 Project overview
+├── GOOGLE_APPS_SCRIPT_SETUP.md       # ⚙️ Setup instructions
+└── PROJECT_STATUS_FINAL.md           # ✅ Final status report
+```
+
+**Result**: Streamlined from 20+ files to 6 essential files - production-ready and organized.
 
 ---
 
