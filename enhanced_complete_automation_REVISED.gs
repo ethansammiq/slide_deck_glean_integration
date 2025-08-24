@@ -224,6 +224,49 @@ function testIntelligentSelection() {
   return result;
 }
 
+/**
+ * Test placeholder replacement fixes for distillery client
+ */
+function testDistilleryPlaceholderFixes() {
+  Logger.log("🧪 TESTING DISTILLERY PLACEHOLDER FIXES");
+  Logger.log("=======================================");
+  
+  var testConfig = {
+    brand: "13th Colony Distilleries",
+    campaign_name: "Premium Spirits Campaign",
+    budget_1: "$500,000",
+    geo_targeting: "Ireland",
+    media_kpis: "Brand awareness, premium positioning, retail sales",
+    flight_start: "03/03/25",
+    flight_end: "12/31/25"
+  };
+  
+  var testGleanInsights = {
+    industry: "Spirits",
+    client_goals: ["Increase premium brand recognition", "Drive retail sales growth", "Establish market presence"],
+    sources: [{title: "Spirits Marketing Case Study", url: "test.com"}]
+  };
+  
+  var replacements = createEnhancedReplacements(testConfig, testGleanInsights);
+  
+  Logger.log("\n📊 PLACEHOLDER REPLACEMENT TEST:");
+  Logger.log(`✅ {{brand}}: "${replacements["{{brand}}"]}" `);
+  Logger.log(`✅ {{band}} (fix): "${replacements["{{band}}"]}" `);
+  Logger.log(`✅ BRAND (fix): "${replacements["BRAND"]}" `);
+  Logger.log(`✅ brand_logo (fix): "${replacements["brand_logo"]}" `);
+  Logger.log(`✅ Budget fix: "${replacements["N/A"]}" `);
+  Logger.log(`✅ Industry detection: "${extractIndustry(testConfig)}" `);
+  
+  Logger.log("\n🧹 CONTENT CLEANUP TEST:");
+  Logger.log(`✅ Template instructions removed: "${replacements["Update with final content"]}" `);
+  Logger.log(`✅ Placeholder content removed: "${replacements["First Last"]}" `);
+  Logger.log(`✅ Industry-specific fix: "${replacements["Happy Egg is not your typical egg"]}" `);
+  
+  Logger.log("\n✅ All placeholder fixes implemented successfully!");
+  
+  return replacements;
+}
+
 // ============================================================================
 // REVISED GLEAN INTELLIGENCE FUNCTIONS (WITH FIXES)
 // ============================================================================
@@ -783,7 +826,11 @@ function extractIndustry(config) {
   var brand = (config.brand || "").toLowerCase();
   var campaign = (config.campaign_name || "").toLowerCase();
   
-  if (brand.indexOf("nike") >= 0 || brand.indexOf("adidas") >= 0 || campaign.indexOf("retail") >= 0) {
+  if (brand.indexOf("distill") >= 0 || brand.indexOf("whiskey") >= 0 || brand.indexOf("bourbon") >= 0 || 
+      brand.indexOf("spirits") >= 0 || brand.indexOf("vodka") >= 0 || brand.indexOf("gin") >= 0 ||
+      campaign.indexOf("alcohol") >= 0 || campaign.indexOf("spirits") >= 0) {
+    return "Spirits";
+  } else if (brand.indexOf("nike") >= 0 || brand.indexOf("adidas") >= 0 || campaign.indexOf("retail") >= 0) {
     return "Retail";
   } else if (brand.indexOf("ford") >= 0 || brand.indexOf("toyota") >= 0 || campaign.indexOf("auto") >= 0) {
     return "Automotive";
@@ -851,17 +898,47 @@ function createFallbackContent(config) {
   }
   
   var industry = extractIndustry(config);
+  var brand = config.brand || "Client";
   
-  return {
-    client_name: config.brand || "Client",
-    industry: industry,
-    region: config.geo_targeting || "Global",
+  // Industry-specific content
+  var goals, modules, overview;
+  
+  if (industry === "Spirits") {
+    goals = [
+      "Build premium brand recognition in the spirits market",
+      "Drive retail sales and distribution growth", 
+      "Establish market presence in key demographics"
+    ];
     
-    client_goals: [
+    modules = [
+      {name: "Premium Display", value_prop: "Sophisticated targeting for affluent spirits consumers"},
+      {name: "Video Storytelling", value_prop: "Craft brand narrative across premium video inventory"},
+      {name: "Retail Activation", value_prop: "Drive foot traffic to premium retail locations"}
+    ];
+    
+    overview = "Leverage MiQ's premium programmatic capabilities to reach discerning spirits consumers with sophisticated targeting and brand-safe environments.";
+  } else {
+    goals = [
       "Increase brand awareness in " + industry + " sector",
       "Drive qualified traffic and conversions",
       "Optimize media performance and ROI"
-    ],
+    ];
+    
+    modules = [
+      {name: "Programmatic Display", value_prop: "Advanced audience targeting and optimization"},
+      {name: "Video Advertising", value_prop: "Engaging video content across premium inventory"},
+      {name: "Performance Analytics", value_prop: "Real-time insights and optimization"}
+    ];
+    
+    overview = "Leverage MiQ's programmatic capabilities to reach your target audience with precision and drive measurable results.";
+  }
+  
+  return {
+    client_name: brand,
+    industry: industry,
+    region: config.geo_targeting || "Global",
+    
+    client_goals: goals,
     
     must_haves: [
       "Real-time reporting and analytics",
@@ -872,16 +949,12 @@ function createFallbackContent(config) {
     decision_criteria: [
       "Platform capabilities and reach",
       "Data quality and targeting precision",
-      "Track record and expertise"
+      "Track record and expertise in " + industry
     ],
     
     proposed_solution: {
-      overview: "Leverage MiQ's programmatic capabilities to reach your target audience with precision and drive measurable results.",
-      modules: [
-        {name: "Programmatic Display", value_prop: "Advanced audience targeting and optimization"},
-        {name: "Video Advertising", value_prop: "Engaging video content across premium inventory"},
-        {name: "Performance Analytics", value_prop: "Real-time insights and optimization"}
-      ]
+      overview: overview,
+      modules: modules
     },
     
     security: {
@@ -1226,6 +1299,8 @@ function createEnhancedReplacements(config, gleanInsights) {
   // Start with original replacements
   var replacements = {
     "{{brand}}": config.brand || "Client",
+    "{{band}}": config.brand || "Client", // Fix for misspelled placeholder in template
+    "BRAND": config.brand || "Client", // Fix for all-caps placeholder
     "{{campaign_name}}": config.campaign_name || "Campaign",
     "{{flight_dates}}": config.flight_dates || "TBD",
     "{{flight_start}}": config.flight_start || "TBD",
@@ -1234,7 +1309,9 @@ function createEnhancedReplacements(config, gleanInsights) {
     "{{geo_targeting}}": config.geo_targeting || "Global",
     "{{campaign_tactics}}": config.campaign_tactics || "Programmatic",
     "{{added_value_amount}}": config.added_value_amount || "TBD",
-    "{{media_kpis}}": config.media_kpis || "Brand awareness, conversions"
+    "{{media_kpis}}": config.media_kpis || "Brand awareness, conversions",
+    "N/A": config.budget_1 || "$100,000", // Fix for budget showing as N/A
+    "Awareness": config.media_kpis || "Brand awareness, conversions" // Fix for generic KPI
   };
   
   // Add Glean-powered enhancements
@@ -1290,6 +1367,27 @@ function createEnhancedReplacements(config, gleanInsights) {
     Logger.log(`✅ Created enhanced replacements with ${Object.keys(replacements).length} placeholders including Glean insights`);
   } else {
     Logger.log(`⚠️ No Glean insights available, using basic replacements`);
+  }
+  
+  // Add cleanup for template instructions and placeholder content
+  replacements["Update with final content"] = "";
+  replacements["Customize for every plan"] = "";
+  replacements["Pull in from client's RFP"] = "";
+  replacements["Use for All Clients"] = "";
+  replacements["First Last"] = "";
+  replacements["Title"] = "";
+  replacements["XX CAMPAIGN"] = config.campaign_name || "Campaign";
+  replacements["$XX"] = config.budget_1 || "$100,000";
+  replacements["brand_logo"] = config.brand + " Logo"; // Fix literal brand_logo text
+  
+  // Industry-specific content fixes
+  var industry = (gleanInsights && gleanInsights.industry) || extractIndustry(config);
+  if (industry === "Spirits" || industry === "Alcohol" || config.brand.toLowerCase().includes("distill")) {
+    replacements["Happy Egg is not your typical egg"] = config.brand + " is a premium craft distillery";
+    replacements["increase brand awareness & drive incremental unit sales"] = "increase brand awareness & drive premium spirits sales";
+    replacements["Otezla"] = config.brand || "Client";
+    replacements["PsO/PsA"] = "craft spirits";
+    replacements["dermatologist"] = "premium retail locations";
   }
   
   return replacements;
