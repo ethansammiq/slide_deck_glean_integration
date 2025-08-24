@@ -452,6 +452,183 @@ function systemHealthCheck() {
 }
 ```
 
+## 🔄 Zapier Workflow Integration & Optimization
+
+### **Current Zapier Architecture (35 Steps)**
+
+Based on analysis of the production Zapier workflow, the system follows this data flow:
+
+#### **Data Collection Phase (Steps 1-9)**
+```
+Step 1: Salesforce Trigger (Sales_Planner_Requests__c)
+Steps 2-6: Data lookups (User, Opportunity, Advertiser, Agency)
+Steps 7-9: Branching logic and date formatting
+```
+
+#### **AI Analysis Phase (Steps 10-14) - REDUNDANT**
+```
+Step 10: AI Analysis - 39 categories (paid_social, commerce, youtube, etc.)
+Step 11: AI Analysis - TV and competitor density detection
+Step 12: AI Analysis - Campaign tactics suggestions
+Step 13: AI Analysis - Geo-targeting determination
+Step 14: AI Analysis - Social platform detection
+```
+**⚠️ These 5 AI steps are replaced by Step 18's intelligent selection**
+
+#### **Processing Phase (Steps 15-18)**
+```
+Step 15-16: Date formatting (campaign start/end)
+Step 17: Budget formatting ($X,XXX format)
+Step 18: ✅ INTELLIGENT SLIDE SELECTION (replaces Steps 10-14 functionality)
+```
+
+#### **Execution Phase (Steps 19-35)**
+```
+Step 19: Webhook to Google Apps Script (slide generation)
+Steps 20-35: Notifications, Jira, Slack, email updates
+```
+
+### **Key Integration Points**
+
+#### **Critical Field Mappings**
+```javascript
+// Step 18 Input Mappings (from Salesforce)
+{
+  "notes": "{{1__Notes__c}}",        // Critical for tactic detection
+  "budget": "{{1__Budget__c}}",       // Raw budget value
+  "campaign_name": "{{1__Campaign_Name__c}}",
+  "brand": "{{4__Name}}"              // From Advertiser lookup
+}
+
+// Step 19 Webhook Payload
+{
+  "slide_indices": "{{18__slide_indices}}",  // Intelligent selection output
+  "brand": "{{4__Name}}",
+  "budget_1": "{{17__output}}",              // Formatted budget
+  "notes": "{{1__Notes__c}}",
+  "campaign_name": "{{1__Campaign_Name__c}}",
+  "flight_dates": "{{15__output}} - {{16__output}}",
+  "geo_targeting": "{{13__geo_targeting}}",
+  "media_kpis": "{{1__Media_KPI__c}}"
+}
+```
+
+### **Optimization Opportunities**
+
+#### **1. Remove Redundant AI Steps (10-14)**
+The intelligent selection in Step 18 already performs:
+- Tactic detection (DOOH, Audio, Location, TV/ACR, Social, etc.)
+- Budget tier analysis
+- Campaign type classification
+- Confidence scoring
+
+**Potential Savings:**
+- 5 AI API calls per execution
+- ~$0.10-0.15 per run
+- 20-30 seconds processing time
+
+#### **2. Fix Budget Format Inconsistency**
+```javascript
+// Issue: Step 17 formats as "$X,XXX" but Step 18 expects raw number
+// Solution in Step 18:
+function parseFormattedBudget(budget) {
+  // Handle both formats: "500000" and "$500,000"
+  return parseInt(budget.replace(/[\$,]/g, '')) || 0;
+}
+```
+
+#### **3. Streamline Data Flow**
+Current: 35 steps → Optimized: ~20 steps
+- Combine date formatting (Steps 15-16)
+- Remove redundant AI analysis (Steps 10-14)
+- Consolidate notification steps
+
+### **Testing & Validation**
+
+#### **Test Step 18 Output**
+```javascript
+// In Zapier, test Step 18 with sample data:
+{
+  "notes": "DOOH and audio campaign with location targeting",
+  "budget": "500000",
+  "campaign_name": "Test Campaign",
+  "brand": "Test Brand"
+}
+
+// Expected output:
+{
+  "slide_indices": "0,1,2,3,4,5,10,11,12,16,17,28,29,140,141,142,158,...",
+  "tactics_detected": 3,
+  "confidence": 85,
+  "reasoning": "Core presentation structure, DOOH tactics detected, AUDIO tactics detected, LOCATION tactics detected",
+  "total_slides": 61
+}
+```
+
+#### **Verify Webhook Integration**
+```javascript
+// Test Step 19 receives intelligent selection:
+function validateWebhookPayload(request) {
+  var slideIndices = request.parameter.slide_indices;
+  
+  if (!slideIndices) {
+    Logger.log("❌ Missing slide_indices from Step 18");
+    return false;
+  }
+  
+  var indices = slideIndices.split(',').map(Number);
+  Logger.log(`✅ Received ${indices.length} slide indices from Zapier`);
+  
+  return indices.length > 9; // Should have more than default
+}
+```
+
+### **Common Zapier Issues & Solutions**
+
+#### **Issue 1: Budget Parsing Failures**
+```
+❌ Problem: Step 18 receives "$500,000" instead of "500000"
+✅ Solution: Update Step 18 to handle both formats
+```
+
+#### **Issue 2: Missing Notes Field**
+```
+❌ Problem: Notes__c is empty or null
+✅ Solution: Add fallback in Step 18:
+if (!notes || notes.length < 10) {
+  // Use default slide selection
+  return { slide_indices: "0,4,5,6,57,58,59", confidence: 50 };
+}
+```
+
+#### **Issue 3: Webhook Timeout**
+```
+❌ Problem: Step 19 times out waiting for Google Apps Script
+✅ Solution: Increase timeout in Zapier to 30 seconds
+```
+
+### **Migration Path to Optimized Workflow**
+
+#### **Phase 1: Validate Current Setup**
+1. Test Step 18 with production data
+2. Verify slide_indices pass through to Step 19
+3. Confirm Google Apps Script receives correct payload
+
+#### **Phase 2: Parallel Testing**
+1. Keep Steps 10-14 active but ignore their output
+2. Compare their recommendations with Step 18
+3. Validate Step 18 provides equal or better results
+
+#### **Phase 3: Decommission Redundant Steps**
+1. Turn off Steps 10-14
+2. Update Step 19 to only use Step 18 output
+3. Monitor for any issues
+
+#### **Phase 4: Workflow Optimization**
+1. Consolidate remaining steps
+2. Implement error handling
+3. Add performance monitoring
+
 ## 📊 Performance Benchmarks
 
 ### **Expected Performance Metrics**
@@ -459,11 +636,13 @@ function systemHealthCheck() {
 - **Intelligence Processing**: <30 seconds total
 - **Slide Generation**: <60 seconds for full deck
 - **Confidence Score**: 85-95% for complete campaigns
+- **Zapier Execution**: <45 seconds total (with optimizations)
 
 ### **Optimization Targets**
 - **Search Success Rate**: >95%
 - **Tactic Detection Accuracy**: >90%
 - **System Uptime**: >99%
 - **Error Recovery**: <5% fallback rate
+- **Zapier Step Reduction**: 35 → 20 steps (43% reduction)
 
-This implementation guide ensures successful deployment and operation of the intelligent slide automation system with comprehensive troubleshooting support.
+This implementation guide ensures successful deployment and operation of the intelligent slide automation system with comprehensive troubleshooting and Zapier integration support.

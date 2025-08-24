@@ -62,136 +62,6 @@ const CONFIG = {
 // NEW: INTELLIGENT SLIDE SELECTION SYSTEM
 // ============================================================================
 
-/**
- * INTELLIGENT SLIDE SELECTION SYSTEM
- * Replaces Zapier's 5 AI steps with 1 intelligent function
- * Returns 52x more targeted slide recommendations
- */
-function getIntelligentSlideIndices(salesforceData) {
-  Logger.log("🧠 INTELLIGENT SLIDE SELECTION");
-  Logger.log("===============================");
-  
-  var notesContent = salesforceData.notes || "";
-  var budget = salesforceData.budget || salesforceData.budget_1 || "";
-  
-  Logger.log(`📝 Analyzing notes: ${notesContent.substring(0, 100)}...`);
-  Logger.log(`💰 Budget: ${budget}`);
-  
-  // Core slides always included
-  var slideSet = new Set([0, 1, 2, 3, 4, 5, 10, 11, 12]);
-  var reasoning = ["Core presentation structure (slides 0-5, 10-12)"];
-  var tacticsDetected = [];
-  
-  // Analyze notes for campaign tactics
-  var notesLower = notesContent.toLowerCase();
-  
-  // DOOH Detection (13 slides)
-  if (notesLower.includes('dooh') || notesLower.includes('digital out-of-home') || notesLower.includes('out-of-home')) {
-    [28, 29, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168].forEach(s => slideSet.add(s));
-    reasoning.push("DOOH: slides 28, 29, 158-168");
-    tacticsDetected.push("DOOH");
-  }
-  
-  // Audio Detection (3 slides)
-  if (notesLower.includes('audio') || notesLower.includes('podcast') || notesLower.includes('companion banner')) {
-    [140, 141, 142].forEach(s => slideSet.add(s));
-    reasoning.push("Audio: slides 140-142");
-    tacticsDetected.push("Audio");
-  }
-  
-  // Location Targeting (3 slides)
-  if (notesLower.includes('location') || notesLower.includes('zip code') || notesLower.includes('geo') || notesLower.includes('dma')) {
-    [16, 17, 189].forEach(s => slideSet.add(s));
-    reasoning.push("Location-based targeting: slides 16, 17, 189");
-    tacticsDetected.push("Location");
-  }
-  
-  // TV/ACR (9 slides)
-  if (notesLower.includes('acr') || notesLower.includes('retargeting') || notesLower.includes('competitive conquesting')) {
-    [131, 132, 133, 134, 135, 136, 137, 138, 139].forEach(s => slideSet.add(s));
-    reasoning.push("TV/ACR retargeting: slides 131-139");
-    tacticsDetected.push("TV/ACR");
-  }
-  
-  // Social (8 slides)
-  if (notesLower.includes('social') || notesLower.includes('facebook') || notesLower.includes('meta') || notesLower.includes('tiktok')) {
-    [123, 124, 125, 126, 127, 128, 129, 130].forEach(s => slideSet.add(s));
-    reasoning.push("Social media: slides 123-130");
-    tacticsDetected.push("Social");
-  }
-  
-  // Programmatic (3 slides)
-  if (notesLower.includes('programmatic') || notesLower.includes('contextual') || notesLower.includes('behavioral')) {
-    [13, 14, 15].forEach(s => slideSet.add(s));
-    reasoning.push("Programmatic: slides 13-15");
-    tacticsDetected.push("Programmatic");
-  }
-  
-  // Commerce (12 slides)
-  if (notesLower.includes('commerce') || notesLower.includes('retail') || notesLower.includes('amazon') || notesLower.includes('walmart')) {
-    [57, 58, 59, 60, 61, 62, 63, 64, 65, 121, 122, 145].forEach(s => slideSet.add(s));
-    reasoning.push("Commerce/Retail: slides 57-65, 121-122, 145");
-    tacticsDetected.push("Commerce");
-  }
-  
-  // Experian Data (2 slides)
-  if (notesLower.includes('experian') || notesLower.includes('zip-code targeting') || notesLower.includes('zip code targeting')) {
-    [16, 17].forEach(s => slideSet.add(s));
-    reasoning.push("Experian data targeting: slides 16-17");
-    tacticsDetected.push("Experian");
-  }
-  
-  // YouTube/Video (16 slides)
-  if (notesLower.includes('youtube') || notesLower.includes('video') || notesLower.includes('ctv') || notesLower.includes('ott')) {
-    [48, 49, 50, 51, 52, 53, 54, 55, 56, 169, 170, 171, 172, 173, 174, 175].forEach(s => slideSet.add(s));
-    reasoning.push("YouTube/Video: slides 48-56, 169-175");
-    tacticsDetected.push("Video");
-  }
-  
-  // B2B/HOA (2 slides)
-  if (notesLower.includes('hoa') || notesLower.includes('homeowners') || notesLower.includes('communities')) {
-    [18, 19].forEach(s => slideSet.add(s));
-    reasoning.push("B2B/Homeowners: slides 18-19");
-    tacticsDetected.push("B2B");
-  }
-  
-  // Budget-based additions
-  var budgetNum = parseInt(budget.replace(/[\D]/g, '')) || 0;
-  if (budgetNum >= 1000000) {
-    [200, 201, 202, 203].forEach(s => slideSet.add(s));
-    reasoning.push(`Premium budget tier ($${budgetNum.toLocaleString()}): slides 200-203`);
-  } else if (budgetNum >= 500000) {
-    [200, 201, 202].forEach(s => slideSet.add(s));
-    reasoning.push(`Standard budget tier ($${budgetNum.toLocaleString()}): slides 200-202`);
-  } else if (budgetNum >= 100000) {
-    [200, 201].forEach(s => slideSet.add(s));
-    reasoning.push(`Basic budget tier ($${budgetNum.toLocaleString()}): slides 200-201`);
-  }
-  
-  var finalIndices = Array.from(slideSet).sort((a, b) => a - b);
-  
-  // Calculate confidence score
-  var confidence = 70; // Base confidence
-  confidence += tacticsDetected.length * 5; // +5% per tactic
-  confidence = Math.min(confidence, 95); // Cap at 95%
-  
-  Logger.log(`✅ Intelligent selection complete:`);
-  Logger.log(`   📊 Slides selected: ${finalIndices.length}`);
-  Logger.log(`   🎯 Tactics detected: ${tacticsDetected.length} (${tacticsDetected.join(', ')})`);
-  Logger.log(`   📈 Confidence: ${confidence}%`);
-  Logger.log(`   📋 Slide indices: ${finalIndices.join(', ')}`);
-  
-  reasoning.forEach((reason, i) => {
-    Logger.log(`   ${i + 1}. ${reason}`);
-  });
-  
-  return {
-    indices: finalIndices,
-    reasoning: reasoning,
-    confidence: confidence,
-    tacticsDetected: tacticsDetected.length
-  };
-}
 
 /**
  * Test the intelligent slide selection system
@@ -1406,6 +1276,325 @@ function formatBulletList(items) {
 }
 
 // ============================================================================
+// ============================================================================
+// INTELLIGENT SLIDE SELECTION FUNCTIONS (FROM ZAPIER STEP 18)
+// ============================================================================
+
+/**
+ * Main wrapper function for intelligent slide selection
+ * (ADDED TO FIX MISSING FUNCTION ERROR)
+ */
+function getIntelligentSlideIndices(salesforceData) {
+  try {
+    Logger.log("🧠 Starting intelligent slide selection");
+    
+    var notes = salesforceData.notes || "";
+    var budget = salesforceData.budget || "";
+    
+    if (!notes || notes.trim() === "") {
+      Logger.log("⚠️ No notes provided, using default slide selection");
+      return {
+        indices: CONFIG.SLIDES.DEFAULT_SLIDE_INDICES,
+        confidence: 70,
+        tacticsDetected: 0,
+        reasoning: "Default slides - no notes provided"
+      };
+    }
+    
+    // Analyze notes for campaign tactics
+    var tacticsDetected = analyzeNotesForTactics(notes);
+    var slideIndices = generateIntelligentSlideIndices(tacticsDetected, budget);
+    var confidence = calculateConfidence(tacticsDetected);
+    var reasoning = generateReasoning(tacticsDetected, budget);
+    
+    var detectedTactics = Object.keys(tacticsDetected).filter(function(t) { return tacticsDetected[t]; });
+    Logger.log("🎯 Tactics detected: " + detectedTactics.join(", "));
+    Logger.log("📊 Slide count: " + slideIndices.length + " slides");
+    Logger.log("📈 Confidence: " + confidence + "%");
+    
+    return {
+      indices: slideIndices,
+      confidence: confidence,
+      tacticsDetected: detectedTactics.length,
+      reasoning: reasoning
+    };
+    
+  } catch (error) {
+    Logger.log("❌ Error in intelligent slide selection: " + error.toString());
+    return {
+      indices: CONFIG.SLIDES.DEFAULT_SLIDE_INDICES,
+      confidence: 70,
+      tacticsDetected: 0,
+      reasoning: "Default slides - error in intelligent selection"
+    };
+  }
+}
+
+/**
+ * Analyze campaign notes to detect tactics
+ * (INTEGRATED FROM ZAPIER STEP 18)
+ */
+function analyzeNotesForTactics(notes) {
+  var notesLower = notes.toLowerCase();
+  
+  return {
+    // DOOH (Digital Out-of-Home)
+    dooh: notesLower.indexOf("dooh") >= 0 || 
+          notesLower.indexOf("digital out-of-home") >= 0 || 
+          notesLower.indexOf("out-of-home") >= 0 ||
+          notesLower.indexOf("heat map") >= 0,
+    
+    // Digital Audio
+    audio: notesLower.indexOf("audio") >= 0 || 
+           notesLower.indexOf("podcast") >= 0 || 
+           notesLower.indexOf("companion banner") >= 0,
+    
+    // Location-Based Targeting
+    location: notesLower.indexOf("location-based") >= 0 || 
+              notesLower.indexOf("zip code") >= 0 || 
+              notesLower.indexOf("dma") >= 0 || 
+              notesLower.indexOf("geo") >= 0 ||
+              notesLower.indexOf("zip-code") >= 0,
+    
+    // TV/ACR Retargeting
+    tv: notesLower.indexOf("acr") >= 0 || 
+        notesLower.indexOf("retargeting") >= 0 || 
+        notesLower.indexOf("competitive conquesting") >= 0 ||
+        notesLower.indexOf("ctv") >= 0 ||
+        notesLower.indexOf("ott") >= 0,
+    
+    // Social Platforms
+    social: notesLower.indexOf("social") >= 0 || 
+            notesLower.indexOf("facebook") >= 0 || 
+            notesLower.indexOf("meta") >= 0 || 
+            notesLower.indexOf("tiktok") >= 0,
+    
+    // Programmatic Buying
+    programmatic: notesLower.indexOf("programmatic") >= 0 || 
+                  notesLower.indexOf("contextual") >= 0 || 
+                  notesLower.indexOf("behavioral") >= 0,
+    
+    // Commerce/Retail
+    commerce: notesLower.indexOf("commerce") >= 0 || 
+              notesLower.indexOf("retail") >= 0 || 
+              notesLower.indexOf("amazon") >= 0 || 
+              notesLower.indexOf("walmart") >= 0,
+    
+    // Data Targeting (Experian)
+    experian: notesLower.indexOf("experian") >= 0 || 
+              notesLower.indexOf("zip-code targeting") >= 0 ||
+              notesLower.indexOf("consumer link") >= 0,
+    
+    // Video/YouTube
+    youtube: notesLower.indexOf("youtube") >= 0 || 
+             notesLower.indexOf("video") >= 0 || 
+             notesLower.indexOf("ctv") >= 0 || 
+             notesLower.indexOf("ott") >= 0,
+    
+    // B2B/HOA Targeting
+    b2b: notesLower.indexOf("hoa") >= 0 || 
+         notesLower.indexOf("homeowners") >= 0 || 
+         notesLower.indexOf("communities") >= 0 ||
+         notesLower.indexOf("adults 25+") >= 0
+  };
+}
+/**
+ * Generate intelligent slide indices based on detected tactics
+ * (INTEGRATED FROM ZAPIER STEP 18)
+ */
+function generateIntelligentSlideIndices(tactics, budget) {
+  // Start with core slides
+  var slideSet = [];
+  var coreSlides = [0, 1, 2, 3, 4, 5, 10, 11, 12];
+  
+  // Add core slides to set
+  for (var i = 0; i < coreSlides.length; i++) {
+    if (slideSet.indexOf(coreSlides[i]) === -1) {
+      slideSet.push(coreSlides[i]);
+    }
+  }
+  
+  // Tactic-to-slide mapping
+  var slideMap = {
+    // DOOH: Comprehensive DOOH strategy slides
+    dooh: [28, 29, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168],
+    
+    // Audio: Digital audio advertising slides  
+    audio: [140, 141, 142],
+    
+    // Location: Geo-targeting and location intelligence
+    location: [16, 17, 189],
+    
+    // TV/ACR: Connected TV and retargeting strategies
+    tv: [131, 132, 133, 134, 135, 136, 137, 138, 139],
+    
+    // Social: Social media platform strategies
+    social: [123, 124, 125, 126, 127, 128, 129, 130],
+    
+    // Programmatic: Automated buying strategies
+    programmatic: [13, 14, 15],
+    
+    // Commerce: E-commerce and retail media
+    commerce: [57, 58, 59, 60, 61, 62, 63, 64, 65, 121, 122, 145],
+    
+    // Experian: Data-driven targeting
+    experian: [16, 17],
+    
+    // YouTube: Video advertising strategies
+    youtube: [48, 49, 50, 51, 52, 53, 54, 55, 56, 169, 170, 171, 172, 173, 174, 175],
+    
+    // B2B: Business and community targeting
+    b2b: [18, 19]
+  };
+  
+  // Add slides for detected tactics
+  Object.keys(tactics).forEach(function(tactic) {
+    if (tactics[tactic] && slideMap[tactic]) {
+      var tacticSlides = slideMap[tactic];
+      for (var j = 0; j < tacticSlides.length; j++) {
+        var slide = tacticSlides[j];
+        if (slideSet.indexOf(slide) === -1) {
+          slideSet.push(slide);
+        }
+      }
+    }
+  });
+  
+  // Add budget-based slides
+  var budgetSlides = getBudgetBasedSlides(budget);
+  for (var k = 0; k < budgetSlides.length; k++) {
+    var budgetSlide = budgetSlides[k];
+    if (slideSet.indexOf(budgetSlide) === -1) {
+      slideSet.push(budgetSlide);
+    }
+  }
+  
+  // Sort array
+  slideSet.sort(function(a, b) { return a - b; });
+  return slideSet;
+}
+
+/**
+ * Get budget-appropriate slides
+ * (INTEGRATED FROM ZAPIER STEP 18)
+ */
+function getBudgetBasedSlides(budget) {
+  var budgetStr = budget || "";
+  var budgetNum = parseInt(budgetStr.replace(/[^\d]/g, '')) || 0;
+  
+  if (budgetNum >= 1000000) {
+    // $1M+ Premium tier: Full added value package
+    return [200, 201, 202, 203];
+  } else if (budgetNum >= 500000) {
+    // $500K+ Standard tier: Core added value
+    return [200, 201, 202];
+  } else if (budgetNum >= 100000) {
+    // $100K+ Basic tier: Essential added value
+    return [200, 201];
+  } else {
+    // <$100K Starter tier: Core presentation only
+    return [];
+  }
+}
+
+/**
+ * Calculate confidence score
+ * (INTEGRATED FROM ZAPIER STEP 18)
+ */
+function calculateConfidence(tactics) {
+  var confidence = 70; // Base confidence
+  
+  // Add 5% for each detected tactic
+  var tacticsCount = Object.keys(tactics).filter(function(t) { return tactics[t]; }).length;
+  confidence += tacticsCount * 5;
+  
+  // Cap at 95%
+  return Math.min(confidence, 95);
+}
+
+/**
+ * Generate human-readable reasoning
+ * (INTEGRATED FROM ZAPIER STEP 18)
+ */
+function generateReasoning(tactics, budget) {
+  var reasoning = ["Core presentation structure (slides 0-5, 10-12)"];
+  
+  Object.keys(tactics).forEach(function(tactic) {
+    if (tactics[tactic]) {
+      reasoning.push(tactic.toUpperCase() + " tactics detected");
+    }
+  });
+  
+  if (budget) {
+    reasoning.push("Budget tier optimization (" + budget + ")");
+  }
+  
+  return reasoning.join(', ');
+}
+
+// ============================================================================
+// DIAGNOSTIC AND MAINTENANCE FUNCTIONS
+// ============================================================================
+
+/**
+ * Debug queue status and contents
+ */
+function debugQueue() {
+  var props = PropertiesService.getScriptProperties();
+  var queue = props.getProperty("requestQueue") || "[]";
+  Logger.log("📋 Current queue: " + queue);
+  
+  try {
+    var queueArray = JSON.parse(queue);
+    Logger.log("📊 Queue length: " + queueArray.length);
+    
+    queueArray.forEach(function(id, index) {
+      var config = props.getProperty("request_" + id);
+      Logger.log("Queue[" + index + "]: " + id + " - Config exists: " + (!!config));
+      
+      if (config) {
+        try {
+          var configObj = JSON.parse(config);
+          var age = Math.round((new Date().getTime() - (configObj.timestamp || 0)) / 60000);
+          Logger.log("  └── Brand: " + configObj.brand + ", Age: " + age + " minutes");
+        } catch (parseError) {
+          Logger.log("  └── Config parse error: " + parseError.toString());
+        }
+      }
+    });
+  } catch (error) {
+    Logger.log("❌ Error parsing queue: " + error.toString());
+  }
+}
+
+/**
+ * Clear the request queue
+ */
+function clearQueue() {
+  PropertiesService.getScriptProperties().setProperty("requestQueue", "[]");
+  Logger.log("✅ Queue cleared");
+}
+
+/**
+ * Clean up all triggers
+ */
+function cleanupTriggers() {
+  var triggers = ScriptApp.getProjectTriggers();
+  var deletedCount = 0;
+  
+  triggers.forEach(function(trigger) {
+    if (trigger.getHandlerFunction() === "processNextPresentationRequest" ||
+        trigger.getHandlerFunction() === "createPresentationInBackground" ||
+        trigger.getHandlerFunction() === "TriggerExecutor") {
+      ScriptApp.deleteTrigger(trigger);
+      Logger.log("🗑️ Deleted trigger: " + trigger.getHandlerFunction() + " (" + trigger.getUniqueId() + ")");
+      deletedCount++;
+    }
+  });
+  
+  Logger.log("✅ Cleaned up " + deletedCount + " triggers");
+}
+
 // INCLUDE ALL YOUR EXISTING FUNCTIONS HERE
 // (sendStatusToReplit, doPost, processNextPresentationRequest, etc.)
 // ============================================================================
@@ -1453,12 +1642,25 @@ function sendStatusToReplit(requestId, brand, status, completion, presentationUr
  */
 function doPost(e) {
   try {
-    var params = e.parameters;
+    // Enhanced debugging for webhook data
+    Logger.log("🔍 Webhook received - ContentLength: " + (e ? e.contentLength || "N/A" : "No event object"));
+    Logger.log("🔍 Event object: " + JSON.stringify(e, null, 2));
     
-    var requestId = (params.requestId && params.requestId[0]) ? params.requestId[0] : "REQ-" + new Date().getTime();
-    var fileName = (params.file_name && params.file_name[0]) ? params.file_name[0] : "New Presentation";
+    var params = e ? e.parameters : {};
+    Logger.log("🔍 Parameters: " + JSON.stringify(params, null, 2));
     
-    Logger.log(`🔍 Using requestId: ${requestId}`);
+    // More robust requestId generation
+    var requestId;
+    if (params && params.requestId && params.requestId[0]) {
+      requestId = params.requestId[0];
+      Logger.log("✅ Using provided requestId: " + requestId);
+    } else {
+      requestId = "REQ-" + new Date().getTime() + "_" + Math.random().toString(36).substr(2, 9);
+      Logger.log("⚠️ Generated new requestId: " + requestId + " (no requestId parameter received)");
+    }
+    
+    var fileName = (params && params.file_name && params.file_name[0]) ? params.file_name[0] : "New Presentation";
+    
     
     var slideIndices = (params.slide_indices && params.slide_indices[0]) ? params.slide_indices[0] : "0,4,5,6,57,58,59";
     
@@ -1725,9 +1927,21 @@ function processNextPresentationRequest() {
       scriptProperties.setProperty("requestQueue", JSON.stringify(queueArray));
       
       Logger.log(`✅ Processing request ${requestId}. Remaining in queue: ${queueArray.length}`);
+      Logger.log("✅ Processing request " + requestId + ". Remaining in queue: " + queueArray.length);
       
-      createPresentationInBackground(requestId);
-      
+      // Validate requestId before processing
+      if (!requestId || requestId === "undefined" || requestId === null) {
+        Logger.log("❌ Invalid requestId: " + requestId + ". Skipping and processing next item.");
+        if (queueArray.length > 0) {
+          // Try next item in queue
+          var nextTrigger = ScriptApp.newTrigger("processNextPresentationRequest")
+            .timeBased()
+            .after(1000)
+            .create();
+          Logger.log("🔄 Scheduled processing of next item: " + nextTrigger.getUniqueId());
+        }
+        return;
+      }      
       if (queueArray.length > 0) {
         removeProcessingTriggers();
         
