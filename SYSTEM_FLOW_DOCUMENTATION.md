@@ -18,38 +18,38 @@ The MiQ Slide Automation System is a sophisticated multi-tier architecture that 
 ```mermaid
 graph TB
     subgraph "Data Source"
-        SF[Salesforce Campaign<br/>Notes__c Field]
+        SF["Salesforce Campaign - Notes__c Field"]
     end
     
     subgraph "Zapier Automation - 35 Steps"
-        Z1[Step 1: Trigger<br/>New Campaign]
-        Z2[Steps 2-9:<br/>Data Extraction]
-        Z10[Step 10: AI Analysis<br/>39 Categories]
-        Z11[Step 11: TV/ACR<br/>Detection]
-        Z13[Step 13: Geo<br/>Targeting]
-        Z14[Step 14: Social<br/>Platforms]
-        Z18[Step 18: Intelligence<br/>Slide Selection]
-        Z19[Step 19: Webhook<br/>to Apps Script]
-        Z35[Step 35: Final<br/>Notification]
+        Z1["Step 1: Trigger New Campaign"]
+        Z2["Steps 2-9: Data Extraction"]
+        Z10["Step 10: AI Analysis - 39 Categories"]
+        Z11["Step 11: TV/ACR Detection"]
+        Z13["Step 13: Geo Targeting"]
+        Z14["Step 14: Social Platforms"]
+        Z18["Step 18: Intelligence Slide Selection"]
+        Z19["Step 19: Webhook to Apps Script"]
+        Z35["Step 35: Final Notification"]
     end
     
     subgraph "Google Apps Script Engine"
-        WH[doPost()<br/>Webhook Handler]
-        Q[Queue Manager]
-        GI[Glean Intelligence<br/>Gatherer]
-        SG[Slide Generator]
-        IR[Image Replacer]
+        WH["doPost() Webhook Handler"]
+        Q["Queue Manager"]
+        GI["Glean Intelligence Gatherer"]
+        SG["Slide Generator"]
+        IR["Image Replacer"]
     end
     
     subgraph "External Services"
-        GL[Glean API<br/>Knowledge Base]
-        GS[Google Search API<br/>Images]
-        RP[Replit Dashboard<br/>Status Monitor]
+        GL["Glean API Knowledge Base"]
+        GS["Google Search API Images"]
+        RP["Replit Dashboard Status Monitor"]
     end
     
     subgraph "Output"
-        GP[Google Presentation<br/>20-60 Intelligent Slides]
-        GD[Google Drive<br/>Storage]
+        GP["Google Presentation - 20-60 Intelligent Slides"]
+        GD["Google Drive Storage"]
     end
     
     SF -->|Campaign Created| Z1
@@ -102,20 +102,20 @@ sequenceDiagram
     Note over Z: Step 1: Campaign Detection
     
     Z->>Z: Steps 2-9: Extract Data
-    Note over Z: Brand, Budget, Notes,<br/>Flight Dates, KPIs
+    Note over Z: Brand, Budget, Notes, Flight Dates, KPIs
     
     Z->>AI: Step 10: Analyze Notes__c
     AI->>AI: Process 39 Categories
     AI-->>Z: Return AI Fields
-    Note over AI: DOOH, Audio, Social,<br/>Commerce, Healthcare, etc.
+    Note over AI: DOOH, Audio, Social, Commerce, Healthcare, etc.
     
     Z->>IS: Step 18: Intelligent Selection
     IS->>IS: Calculate Slide Indices
-    Note over IS: Analyze Budget Tier<br/>Detect Tactics<br/>Score Confidence
+    Note over IS: Analyze Budget Tier - Detect Tactics - Score Confidence
     IS-->>Z: Return 20-60 Indices
     
     Z->>Z: Step 19: Prepare Webhook
-    Note over Z: Package All Data<br/>for Apps Script
+    Note over Z: Package All Data for Apps Script
 ```
 
 ### Step 2: Apps Script Request Processing
@@ -123,24 +123,24 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     subgraph "Webhook Payload"
-        P[POST Request<br/>from Zapier]
+        P["POST Request from Zapier"]
         P --> PD{Parse Data}
-        PD --> R[Request Config]
-        PD --> SI[Slide Indices<br/>20-60 slides]
-        PD --> IC[Industry Context]
-        PD --> GQ[Glean Queries]
+        PD --> R["Request Config"]
+        PD --> SI["Slide Indices - 20-60 slides"]
+        PD --> IC["Industry Context"]
+        PD --> GQ["Glean Queries"]
     end
     
     subgraph "Request Queue"
-        R --> RID[Generate Request ID]
-        RID --> SP[Store in Properties]
-        SP --> QA[Add to Queue]
-        QA --> T[Create Trigger]
+        R --> RID["Generate Request ID"]
+        RID --> SP["Store in Properties"]
+        SP --> QA["Add to Queue"]
+        QA --> T["Create Trigger"]
     end
     
     subgraph "Response"
-        T --> JR[JSON Response]
-        JR --> |Success| Z[Back to Zapier]
+        T --> JR["JSON Response"]
+        JR --> |Success| Z["Back to Zapier"]
         JR --> |Queue Position| Z
     end
 ```
@@ -264,7 +264,7 @@ sequenceDiagram
     Note over RP: Include Presentation URL
     
     AS->>Z: Webhook Response
-    Note over Z: Presentation URL<br/>Request ID<br/>Statistics
+    Note over Z: Presentation URL - Request ID - Statistics
 ```
 
 ## 🎯 Slide Generation Pipeline
@@ -272,18 +272,18 @@ sequenceDiagram
 ```mermaid
 flowchart LR
     subgraph "Preparation"
-        MP[Master Presentation<br/>200+ slides]
-        SI[Selected Indices<br/>20-60 slides]
-        RC[Replacement Content<br/>from Glean]
+        MP["Master Presentation - 200+ slides"]
+        SI["Selected Indices - 20-60 slides"]
+        RC["Replacement Content from Glean"]
     end
     
     subgraph "Generation Process"
-        NP[Create New<br/>Presentation]
-        CS[Copy Selected<br/>Slides]
-        RT[Replace Text<br/>Placeholders]
-        RI[Replace Images<br/>Brand/Lifestyle]
-        AS[Add Sources<br/>Slide]
-        AA[Add Assumptions<br/>Slide]
+        NP["Create New Presentation"]
+        CS["Copy Selected Slides"]
+        RT["Replace Text Placeholders"]
+        RI["Replace Images - Brand/Lifestyle"]
+        AS["Add Sources Slide"]
+        AA["Add Assumptions Slide"]
     end
     
     subgraph "Output"
@@ -409,36 +409,36 @@ graph LR
 ```mermaid
 flowchart TB
     subgraph "Error Detection"
-        E1[Timeout Error<br/>>30 min]
-        E2[Glean API Error<br/>401/403/429]
-        E3[Slides Copy Error]
-        E4[Queue Overflow]
-        E5[Network Failure]
+        E1["Timeout Error - >30 min"]
+        E2["Glean API Error - 401/403/429"]
+        E3["Slides Copy Error"]
+        E4["Queue Overflow"]
+        E5["Network Failure"]
     end
     
     subgraph "Recovery Strategies"
-        E1 --> R1[Remove from Queue<br/>Notify User]
-        E2 --> R2[Use Fallback Content<br/>Continue Processing]
-        E3 --> R3[Retry with Defaults<br/>Log Issue]
-        E4 --> R4[Clean Stale Requests<br/>Process FIFO]
-        E5 --> R5[Exponential Backoff<br/>Max 3 Retries]
+        E1 --> R1["Remove from Queue - Notify User"]
+        E2 --> R2["Use Fallback Content - Continue Processing"]
+        E3 --> R3["Retry with Defaults - Log Issue"]
+        E4 --> R4["Clean Stale Requests - Process FIFO"]
+        E5 --> R5["Exponential Backoff - Max 3 Retries"]
     end
     
     subgraph "Fallback Content"
-        FC[Template Content]
-        DG[Default Goals]
-        DT[Default Timeline]
-        DS[Default Security]
+        FC["Template Content"]
+        DG["Default Goals"]
+        DT["Default Timeline"]
+        DS["Default Security"]
     end
     
     subgraph "Notification"
-        R1 --> N[Status: Error]
+        R1 --> N["Status: Error"]
         R2 --> N
         R3 --> N
         R4 --> N
         R5 --> N
-        N --> RP[Replit Dashboard]
-        N --> ZW[Zapier Webhook]
+        N --> RP["Replit Dashboard"]
+        N --> ZW["Zapier Webhook"]
     end
     
     R2 --> FC
